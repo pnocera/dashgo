@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
       - name: dashgo
-        image: gcr.io/gci-ptfd-host-dev/dashgo:v0.0.1
+        image: gcr.io/gci-ptfd-host-dev/dashgo:v0.0.2
         env:
         - name: DAPR_HOST_PORT
           value: http://localhost:3500
