@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashgo
+  namespace: default
+  labels:
+    app: dashgo
+spec:
+  type: ClusterIP
+  ports:
+  - port: 30507
+    name: http
+  selector:
+    app: dashgo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashgo
+  namespace: default
+  labels:
+    app: dashgo
+spec:
+  selector:
+    matchLabels:
+      app: dashgo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dashgo
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "dashgo"
+        dapr.io/app-port: "30507"
+        dapr.io/log-as-json: "true"
+        dapr.io/log-level: "debug"
+    spec:
+      containers:
+      - name: dashgo
+        image: gcr.io/gci-ptfd-host-dev/dashgo:v0.0.1
+        env:
+        - name: DAPR_HOST_PORT
+          value: http://localhost:3500
+        - name: API_PORT
+          value: "30507"
+        
