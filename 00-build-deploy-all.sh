@@ -1,8 +1,8 @@
 #!/bin/sh
 
 
-OLDVERSION="v0.0.2"
-VERSION="v0.0.3"
+OLDVERSION="v0.0.3"
+VERSION="v0.0.4"
 DOCKER_REGISTRY="gcr.io/gci-ptfd-host-dev"
 
 APP_NAME="dashgo"

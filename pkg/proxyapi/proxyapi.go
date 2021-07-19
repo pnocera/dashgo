@@ -42,7 +42,7 @@ func NewProxyApi(kubeClient *kubernetes.Clientset) ProxyAPI {
 // Gets the proxy deployment
 func (i *proxyapi) GetProxy() instances.Instance {
 
-	d, err := i.getDeployment(fmt.Sprintf("%s=%s", daprIsProxyAnnotation, "true"))
+	d, err := i.getDeploymentByAnnotation(daprIsProxyAnnotation, "true")
 
 	if err != nil {
 		log.Println(err)
@@ -114,7 +114,7 @@ func (i *proxyapi) UnProxy() bool {
 }
 
 func (i *proxyapi) patchDeployment(appID string, newID string) error {
-	d, err := i.getDeployment(fmt.Sprintf("%s=%s", daprIDAnnotation, appID))
+	d, err := i.getDeploymentByAnnotation(daprIDAnnotation, appID)
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func (i *proxyapi) patchDeployment(appID string, newID string) error {
 func (i *proxyapi) unpatchDeployment() error {
 	deploymentsClient := i.kubeClient.AppsV1().Deployments("")
 
-	prox, err := i.getDeployment(daprIsProxyAnnotation + "=true")
+	prox, err := i.getDeploymentByAnnotation(daprIsProxyAnnotation, "true")
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (i *proxyapi) unpatchDeployment() error {
 		return err
 	}
 
-	d, err := i.getDeployment(fmt.Sprintf("%s=%s%s", daprIDAnnotation, appid, daprProxySuffix))
+	d, err := i.getDeploymentByAnnotation(daprIDAnnotation, fmt.Sprintf("%s%s", appid, daprProxySuffix))
 	if err != nil {
 		return err
 	}
@@ -164,17 +164,34 @@ func (i *proxyapi) unpatchDeployment() error {
 	return nil
 }
 
-func (i *proxyapi) getDeployment(labelselector string) (v1.Deployment, error) {
-	options := meta_v1.ListOptions{
-		LabelSelector: labelselector,
-	}
+// func (i *proxyapi) getDeployment0(labelselector string) (v1.Deployment, error) {
+// 	options := meta_v1.ListOptions{
+// 		LabelSelector: labelselector,
+// 	}
+// 	resp, err := i.kubeClient.AppsV1().Deployments("").List((options))
+// 	if err != nil {
+// 		log.Println(err)
+// 		return v1.Deployment{}, err
+// 	}
+// 	for _, d := range resp.Items {
+// 		return d, nil
+// 	}
+// 	return v1.Deployment{}, errors.New("no matches found")
+// }
+
+func (i *proxyapi) getDeploymentByAnnotation(annotation string, value string) (v1.Deployment, error) {
+	options := meta_v1.ListOptions{}
 	resp, err := i.kubeClient.AppsV1().Deployments("").List((options))
 	if err != nil {
 		log.Println(err)
 		return v1.Deployment{}, err
 	}
 	for _, d := range resp.Items {
-		return d, nil
+		id := d.Spec.Template.Annotations[annotation]
+		if id != "" {
+			return d, nil
+		}
+
 	}
 	return v1.Deployment{}, errors.New("no matches found")
 }

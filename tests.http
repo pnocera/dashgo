@@ -16,3 +16,6 @@ http://10.24.3.173:30507/api/platform
 
 ###
 http://10.24.3.173:30507/api/controlplanestatus
+
+###
+http://10.24.3.173:30507/api/proxy
