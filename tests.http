@@ -24,4 +24,4 @@ http://10.24.1.210:30507/api/proxy
 http://10.24.1.210:30507/api/proxy/default/unproxy
 
 ###
-http://10.24.1.210:30507/api/proxy/default/datalayer
+http://10.24.1.210:30507/api/proxy/default/admincli

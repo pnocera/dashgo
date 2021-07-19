@@ -132,7 +132,7 @@ func (i *proxyapi) patchDeployment(scope string, appID string, newID string) err
 }
 
 func (i *proxyapi) unpatchDeployment(scope string) error {
-	deploymentsClient := i.kubeClient.AppsV1().Deployments("")
+	deploymentsClient := i.kubeClient.AppsV1().Deployments(scope)
 
 	prox, err := i.getDeploymentByAnnotation(scope, daprIsProxyAnnotation, "true")
 	if err != nil {
