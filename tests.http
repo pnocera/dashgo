@@ -1,27 +1,27 @@
-http://10.24.3.173:30507/api/features
+http://10.24.1.210:30507/api/features
 
 ###
-http://10.24.3.173:30507/api/instances/All
+http://10.24.1.210:30507/api/instances/All
 ###
-http://10.24.3.173:30507/api/components/default
+http://10.24.1.210:30507/api/components/default
 
 ###
-http://10.24.3.173:30507/api/version
+http://10.24.1.210:30507/api/version
 
 ###
-http://10.24.3.173:30507/api/scopes
+http://10.24.1.210:30507/api/scopes
 
 ###
-http://10.24.3.173:30507/api/platform
+http://10.24.1.210:30507/api/platform
 
 ###
-http://10.24.3.173:30507/api/controlplanestatus
+http://10.24.1.210:30507/api/controlplanestatus
 
 ###
-http://10.24.3.173:30507/api/proxy
+http://10.24.1.210:30507/api/proxy
 
 ###
-http://10.24.3.173:30507/api/proxy/unproxy
+http://10.24.1.210:30507/api/proxy/default/unproxy
 
 ###
-http://10.24.3.173:30507/api/proxy/datalayer
+http://10.24.1.210:30507/api/proxy/default/datalayer

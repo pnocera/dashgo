@@ -40,7 +40,7 @@ spec:
       serviceAccountName: dashgo-reader
       containers:
       - name: dashgo
-        image: gcr.io/gci-ptfd-host-dev/dashgo:v0.0.5
+        image: gcr.io/gci-ptfd-host-dev/dashgo:v0.0.6
         env:
         - name: DAPR_HOST_PORT
           value: http://localhost:3500
@@ -62,7 +62,7 @@ rules:
         "configurations",
         "namespaces",
       ]
-    verbs: ["get", "list"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

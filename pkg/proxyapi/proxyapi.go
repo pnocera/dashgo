@@ -188,7 +188,7 @@ func (i *proxyapi) getDeploymentByAnnotation(scope string, annotation string, va
 	}
 	for _, d := range resp.Items {
 		id := d.Spec.Template.Annotations[annotation]
-		if id != "" {
+		if id == value {
 			return d, nil
 		}
 
