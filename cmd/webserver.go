@@ -92,8 +92,8 @@ func RunWebServer(port int) {
 	api.HandleFunc("/version", getVersionHandler).Methods("GET")
 
 	api.HandleFunc("/proxy", getProxyHandler).Methods("GET")
-	api.HandleFunc("/proxy/unproxy", unProxyHandler).Methods("GET")
-	api.HandleFunc("/proxy/{id}", setProxyHandler).Methods("GET")
+	api.HandleFunc("/proxy/{scope}/unproxy", unProxyHandler).Methods("GET")
+	api.HandleFunc("/proxy/{scope}/{id}", setProxyHandler).Methods("GET")
 
 	spa := spaHandler{staticPath: "web/dist", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
@@ -147,20 +147,24 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func getProxyHandler(w http.ResponseWriter, r *http.Request) {
-	resp := proxys.GetProxy()
+	vars := mux.Vars(r)
+	scope := vars["scope"]
+	resp := proxys.GetProxy(scope)
 	respondWithJSON(w, 200, resp)
 }
 
 func unProxyHandler(w http.ResponseWriter, r *http.Request) {
-	resp := proxys.UnProxy()
+	vars := mux.Vars(r)
+	scope := vars["scope"]
+	resp := proxys.UnProxy(scope)
 	respondWithJSON(w, 200, resp)
 }
 
 func setProxyHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	appid := vars["id"]
-
-	md := proxys.Proxy(appid)
+	scope := vars["scope"]
+	md := proxys.Proxy(scope, appid)
 	respondWithJSON(w, 200, md)
 }
 

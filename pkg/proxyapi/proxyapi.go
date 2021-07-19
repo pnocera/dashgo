@@ -21,9 +21,9 @@ const (
 )
 
 type ProxyAPI interface {
-	GetProxy() instances.Instance
-	Proxy(appID string) bool
-	UnProxy() bool
+	GetProxy(scope string) instances.Instance
+	Proxy(scope string, appID string) bool
+	UnProxy(scope string) bool
 }
 
 type proxyapi struct {
@@ -40,9 +40,9 @@ func NewProxyApi(kubeClient *kubernetes.Clientset) ProxyAPI {
 }
 
 // Gets the proxy deployment
-func (i *proxyapi) GetProxy() instances.Instance {
+func (i *proxyapi) GetProxy(scope string) instances.Instance {
 
-	d, err := i.getDeploymentByAnnotation(daprIsProxyAnnotation, "true")
+	d, err := i.getDeploymentByAnnotation(scope, daprIsProxyAnnotation, "true")
 
 	if err != nil {
 		log.Println(err)
@@ -71,22 +71,22 @@ func (i *proxyapi) GetProxy() instances.Instance {
 
 }
 
-func (i *proxyapi) Proxy(appID string) bool {
+func (i *proxyapi) Proxy(scope string, appID string) bool {
 	//get proxy and switch to appID
-	inst := i.GetProxy().AppID
+	inst := i.GetProxy(scope).AppID
 
 	if inst == "" {
 		log.Println("Could not get proxy")
 		return false
 	}
 
-	err := i.patchDeployment(appID, fmt.Sprintf("%s%s", appID, daprProxySuffix))
+	err := i.patchDeployment(scope, appID, fmt.Sprintf("%s%s", appID, daprProxySuffix))
 	if err != nil {
 		log.Println(err)
 		return false
 	}
 
-	err = i.patchDeployment(inst, appID)
+	err = i.patchDeployment(scope, inst, appID)
 	if err != nil {
 
 		log.Println(err)
@@ -96,15 +96,15 @@ func (i *proxyapi) Proxy(appID string) bool {
 	return true
 }
 
-func (i *proxyapi) UnProxy() bool {
+func (i *proxyapi) UnProxy(scope string) bool {
 
-	appID := i.GetProxy().AppID
+	appID := i.GetProxy(scope).AppID
 	if appID == "" {
 		log.Println("Could not get proxy")
 		return false
 	}
 
-	err := i.unpatchDeployment()
+	err := i.unpatchDeployment(scope)
 	if err != nil {
 		log.Println(err)
 		return false
@@ -113,13 +113,13 @@ func (i *proxyapi) UnProxy() bool {
 	return true
 }
 
-func (i *proxyapi) patchDeployment(appID string, newID string) error {
-	d, err := i.getDeploymentByAnnotation(daprIDAnnotation, appID)
+func (i *proxyapi) patchDeployment(scope string, appID string, newID string) error {
+	d, err := i.getDeploymentByAnnotation(scope, daprIDAnnotation, appID)
 	if err != nil {
 		return err
 	}
 
-	deploymentsClient := i.kubeClient.AppsV1().Deployments("")
+	deploymentsClient := i.kubeClient.AppsV1().Deployments(scope)
 	d.Spec.Template.Annotations[daprIDAnnotation] = newID
 	d.Spec.Template.Annotations[daprPushedAppIDAnnotation] = appID
 
@@ -131,10 +131,10 @@ func (i *proxyapi) patchDeployment(appID string, newID string) error {
 	return nil
 }
 
-func (i *proxyapi) unpatchDeployment() error {
+func (i *proxyapi) unpatchDeployment(scope string) error {
 	deploymentsClient := i.kubeClient.AppsV1().Deployments("")
 
-	prox, err := i.getDeploymentByAnnotation(daprIsProxyAnnotation, "true")
+	prox, err := i.getDeploymentByAnnotation(scope, daprIsProxyAnnotation, "true")
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (i *proxyapi) unpatchDeployment() error {
 		return err
 	}
 
-	d, err := i.getDeploymentByAnnotation(daprIDAnnotation, fmt.Sprintf("%s%s", appid, daprProxySuffix))
+	d, err := i.getDeploymentByAnnotation(scope, daprIDAnnotation, fmt.Sprintf("%s%s", appid, daprProxySuffix))
 	if err != nil {
 		return err
 	}
@@ -179,9 +179,9 @@ func (i *proxyapi) unpatchDeployment() error {
 // 	return v1.Deployment{}, errors.New("no matches found")
 // }
 
-func (i *proxyapi) getDeploymentByAnnotation(annotation string, value string) (v1.Deployment, error) {
+func (i *proxyapi) getDeploymentByAnnotation(scope string, annotation string, value string) (v1.Deployment, error) {
 	options := meta_v1.ListOptions{}
-	resp, err := i.kubeClient.AppsV1().Deployments("").List((options))
+	resp, err := i.kubeClient.AppsV1().Deployments(scope).List((options))
 	if err != nil {
 		log.Println(err)
 		return v1.Deployment{}, err
