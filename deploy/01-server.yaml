@@ -37,12 +37,47 @@ spec:
         dapr.io/log-as-json: "true"
         dapr.io/log-level: "debug"
     spec:
+      serviceAccountName: dashgo-reader
       containers:
       - name: dashgo
-        image: gcr.io/gci-ptfd-host-dev/dashgo:v0.0.2
+        image: gcr.io/gci-ptfd-host-dev/dashgo:v0.0.3
         env:
         - name: DAPR_HOST_PORT
           value: http://localhost:3500
         - name: API_PORT
           value: "30507"
-        
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: dashgo-reader
+rules:
+  - apiGroups: ["", "dapr.io", "apps", "extensions"]
+    resources:
+      [
+        "deployments",
+        "pods",
+        "pods/log",
+        "components",
+        "configurations",
+        "namespaces",
+      ]
+    verbs: ["get", "list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: dashgo-reader-global
+subjects:
+  - kind: ServiceAccount
+    name: dashgo-reader
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: dashgo-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dashgo-reader

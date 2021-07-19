@@ -18,6 +18,7 @@ import (
 	instances "github.com/pnocera/dashgo/pkg/instances"
 	kube "github.com/pnocera/dashgo/pkg/kube"
 	dashboard_log "github.com/pnocera/dashgo/pkg/log"
+	proxyapi "github.com/pnocera/dashgo/pkg/proxyapi"
 	"github.com/pnocera/dashgo/pkg/version"
 )
 
@@ -53,6 +54,7 @@ type spaHandler struct {
 var inst instances.Instances
 var comps components.Components
 var configs configurations.Configurations
+var proxys proxyapi.ProxyAPI
 
 // RunWebServer starts the web server that serves the Dapr UI dashboard and the API
 func RunWebServer(port int) {
@@ -67,6 +69,7 @@ func RunWebServer(port int) {
 	inst = instances.NewInstances(platform, kubeClient)
 	comps = components.NewComponents(platform, daprClient)
 	configs = configurations.NewConfigurations(platform, daprClient)
+	proxys = proxyapi.NewProxyApi(kubeClient)
 
 	r := mux.NewRouter()
 	api := r.PathPrefix("/api/").Subrouter()
@@ -88,6 +91,10 @@ func RunWebServer(port int) {
 	api.HandleFunc("/features", getFeaturesHandler).Methods("GET")
 	api.HandleFunc("/version", getVersionHandler).Methods("GET")
 
+	api.HandleFunc("/proxy", getProxyHandler).Methods("GET")
+	api.HandleFunc("/proxy/unproxy", unProxyHandler).Methods("GET")
+	api.HandleFunc("/proxy/{id}", setProxyHandler).Methods("GET")
+
 	spa := spaHandler{staticPath: "web/dist", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa)
 
@@ -97,7 +104,7 @@ func RunWebServer(port int) {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-	fmt.Printf("Dapr Dashboard running on http://localhost:%v\n", port)
+	fmt.Printf("Proxy Dashboard running on http://localhost:%v\n", port)
 	log.Fatal(srv.ListenAndServe())
 }
 
@@ -137,6 +144,24 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// otherwise, use http.FileServer to serve the static dir
 	noCache(http.StripPrefix("/", http.FileServer(http.Dir(h.staticPath)))).ServeHTTP(w, r)
+}
+
+func getProxyHandler(w http.ResponseWriter, r *http.Request) {
+	resp := proxys.GetProxy()
+	respondWithJSON(w, 200, resp)
+}
+
+func unProxyHandler(w http.ResponseWriter, r *http.Request) {
+	resp := proxys.UnProxy()
+	respondWithJSON(w, 200, resp)
+}
+
+func setProxyHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	appid := vars["id"]
+
+	md := proxys.Proxy(appid)
+	respondWithJSON(w, 200, md)
 }
 
 func getInstancesHandler(w http.ResponseWriter, r *http.Request) {
