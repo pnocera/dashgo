@@ -24,6 +24,7 @@ type ProxyAPI interface {
 	GetProxy(scope string) instances.Instance
 	Proxy(scope string, appID string) bool
 	UnProxy(scope string) bool
+	Proxied(scope string) string
 }
 
 type proxyapi struct {
@@ -69,6 +70,22 @@ func (i *proxyapi) GetProxy(scope string) instances.Instance {
 		Config:           d.Spec.Template.Annotations["dapr.io/config"],
 	}
 
+}
+
+func (i *proxyapi) Proxied(scope string) string {
+	d, err := i.getDeploymentByAnnotation(scope, daprIsProxyAnnotation, "true")
+
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+
+	id := d.Spec.Template.Annotations[daprPushedAppIDAnnotation]
+
+	if id != "" {
+		return d.Spec.Template.Annotations[daprIDAnnotation]
+	}
+	return ""
 }
 
 func (i *proxyapi) Proxy(scope string, appID string) bool {

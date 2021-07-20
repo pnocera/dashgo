@@ -92,6 +92,7 @@ func RunWebServer(port int) {
 	api.HandleFunc("/version", getVersionHandler).Methods("GET")
 
 	api.HandleFunc("/proxy", getProxyHandler).Methods("GET")
+	api.HandleFunc("/proxy/{scope}/proxied", getProxiedHandler).Methods("GET")
 	api.HandleFunc("/proxy/{scope}/unproxy", unProxyHandler).Methods("GET")
 	api.HandleFunc("/proxy/{scope}/{id}", setProxyHandler).Methods("GET")
 
@@ -150,6 +151,13 @@ func getProxyHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	scope := vars["scope"]
 	resp := proxys.GetProxy(scope)
+	respondWithJSON(w, 200, resp)
+}
+
+func getProxiedHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	scope := vars["scope"]
+	resp := proxys.Proxied(scope)
 	respondWithJSON(w, 200, resp)
 }
 
