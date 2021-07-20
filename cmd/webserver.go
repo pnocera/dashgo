@@ -91,7 +91,7 @@ func RunWebServer(port int) {
 	api.HandleFunc("/features", getFeaturesHandler).Methods("GET")
 	api.HandleFunc("/version", getVersionHandler).Methods("GET")
 
-	api.HandleFunc("/proxy", getProxyHandler).Methods("GET")
+	api.HandleFunc("/proxy/{scope}", getProxyHandler).Methods("GET")
 	api.HandleFunc("/proxy/{scope}/proxied", getProxiedHandler).Methods("GET")
 	api.HandleFunc("/proxy/{scope}/unproxy", unProxyHandler).Methods("GET")
 	api.HandleFunc("/proxy/{scope}/{id}", setProxyHandler).Methods("GET")
